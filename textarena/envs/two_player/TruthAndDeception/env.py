@@ -166,7 +166,7 @@ class TruthAndDeceptionEnv(ta.Env):
             self.state.add_observation(
                 from_id=ta.GAME_ID,
                 to_id=-1, # Broadcast to all
-                message="Now guess which of the two facts are correct by returning [Fact 1] or [Fact 2].",
+                message="Now guess which of the two facts are correct by returning [Fact 1] or [Fact 2]. First Answer with [Fact 1] or [Fact 2], according to whatever your answer is. Then give a reasoning for why do you think this answer is correct?",
                 for_logging=True,
             )
 
