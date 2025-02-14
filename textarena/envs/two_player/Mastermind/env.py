@@ -9,64 +9,43 @@ class MastermindEnv(ta.Env):
     """
     def __init__(
         self,
-        difficulty: Optional[str] = "easy",
+        code_length: Optional[int] = 4,
+        num_numbers: Optional[int] = 6,
+        max_turns: Optional[int] = 20,
+        duplicate_numbers: Optional[bool] = False
     ):
         """
         Initializes the Mastermind environment.
         
         Parameters:
-        - difficulty: The difficulty level of the game (easy, medium, hard).
+            code_length (int): the number of options to get right
+            max_turns (int): the number of turns until draw
+            duplicate_numbers (bool): whether numbers can be duplicates
         """
         super().__init__()
-        self.environment_name = "Mastermind"
-        self.difficulty = difficulty
+        self.code_length = code_length 
+        self.num_numbers = num_numbers
+        self.duplicate_numbers = duplicate_numbers
 
-        ## initializa the properties of the game
-        if self.difficulty == "easy":
-            self.code_length = 4
-            self.num_numbers = 6
-            self.max_turns = 20
-            self.duplicate_numbers = False
-        elif self.difficulty == "medium":
-            self.code_length = 4
-            self.num_numbers = 8
-            self.max_turns = 30
-            self.duplicate_numbers = False
-        elif self.difficulty == "hard":
-            self.code_length = 4
-            self.num_numbers = 10
-            self.max_turns = 50
-            self.duplicate_numbers = True
-        else:
-            raise ValueError(f"Invalid difficulty level: {difficulty}")
-        
         ## inistialize the game state
         self.state = ta.State(
             num_players=2,
-            max_turns=self.max_turns,
+            max_turns=max_turns,
         )
     
     @property
     def terminal_render_keys(self):
         return ["rendered_view"]
 
-    def reset(
-        self,
-        seed: Optional[int] = None
-    ) -> Optional[ta.Observations]:
+    def reset(self, seed: Optional[int] = None):
         """
         Resets the environment to its initial state.
         
         Args:
             seed (int): Optional random seed for reproducibility.
-            
-        Returns:
-            Observations: Initial observations for all players.
         """
         if seed is not None:
             random.seed(seed)
-        else:
-            random.seed()
 
         ## initialize the game objects
         self.secret_codes = self._generate_secret_codes()
@@ -123,27 +102,18 @@ class MastermindEnv(ta.Env):
             str: Initial prompt for the player.
         """
         prompt = (
-            f"You are Player {player_id}. You are playing Mastermind ({self.difficulty} level).\n"
+            f"You are Player {player_id}. You are playing Mastermind.\n"
             f"Your goal is to guess the other player's secret code that is {self.code_length} digits long, where each digit ranges from 1 to {self.num_numbers}, and the are {'' if self.duplicate_numbers else 'no '}duplicate digits.\n"
             "In your response, you can mention any code or previously submitted code in the format of 1 2 3 4. Only when you have decided to make your guess, then you must strictly enter the code in square brackets like [2 1 4 5]. This is to avoid submitting a wrong code to the game environment.\n"
             "Hence, if you are quoting a recent guess, you must mention the numbers without the square brackets.\n"
             "After each guess, you will receive feedback in the form of black and white pegs.\n"
             "A black peg indicates a correct digit in the correct position, while a white peg indicates a correct digit in the wrong position.\n"
-            f"You have only {self.max_turns/2:.0f} turns to guess the code.\n"
+            f"You have only {self.state.max_turns/2:.0f} turns to guess the code.\n"
         )
 
         return prompt
     
-    def step(
-        self,
-        action: str,
-    ) -> Tuple[
-        ta.Observations,
-        ta.Rewards,
-        bool,
-        bool,
-        ta.Info
-    ]:
+    def step(self, action: str) -> Tuple[bool, ta.Info]:
         """
         Process the player's action and update the game state.
 
@@ -152,18 +122,15 @@ class MastermindEnv(ta.Env):
             action (str): The player's action (guess).
 
         Returns:
-            Observations: Observations for all players.
-            Rewards: Rewards for all players.
-            bool: Whether the game is truncated.
-            bool: Whether the game is terminated.
-            Info: Additional information.
+            done (bool): whether the game has concluded
+            Info (ta.Info): additional information
         """
         player_id = self.state.current_player_id
 
         ## update the observations
         self.state.add_observation(
             from_id=player_id,
-            to_id=player_id, ## send the observation to the same player
+            to_id=-1, # broadcast to all 
             message=action,
             for_logging=True
         )
@@ -206,8 +173,8 @@ class MastermindEnv(ta.Env):
                 else:
                     self.state.add_observation(
                         from_id=ta.GAME_ID,
-                        to_id=player_id, ## send the observation to the player
-                        message=f"You have submitted [{match.group(1)}]. Feedback: {black_pegs} black peg(s), {white_pegs} white peg(s).",
+                        to_id=-1, # Broadcast to all
+                        message=f"Player {player_id} submitted [{match.group(1)}]. Feedback: {black_pegs} black peg(s), {white_pegs} white peg(s).",
                         for_logging=False
                     )
 
@@ -247,17 +214,3 @@ class MastermindEnv(ta.Env):
                         break
 
         return black_pegs, white_pegs
-    
-    def render(self):
-        """
-        Renders the minimal game state.
-        """
-        print(f"Turn: {self.state.turn}")
-        print("\nRecent Game Logs:")
-        recent_logs = self.state.logs[-5:]
-
-        for sender_id, log in recent_logs:
-            if sender_id == ta.GAME_ID:
-                print(f"[GAME] {log}")
-            else:
-                print(f"[Player {sender_id}] {log}")

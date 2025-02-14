@@ -162,7 +162,9 @@ class PokerEnv(ta.Env):
         self.state.game_state["round_turn"] = 0
 
         # set current player (bb_player + 1)
-        self.state.current_player_id = (bb_player + 1) % 2
+        next_player_id = (bb_player + 1) % 2
+        self.state.manually_updated_current_player(new_player_id=next_player_id)
+        # self.state.current_player_id = (bb_player + 1) % 2
 
         self._observe_current_pot()
 
@@ -263,7 +265,10 @@ class PokerEnv(ta.Env):
         # move to next player if betting continues
         else:
             next_player = self._get_next_active_player(player_id)
-            self.state.current_player_id = next_player 
+            # self.state.current_player_id = next_player 
+
+            # try setting the next player 
+            self.state.manually_updated_current_player(new_player_id=next_player)
 
 
     def _is_hand_over(self) -> bool:
@@ -273,7 +278,6 @@ class PokerEnv(ta.Env):
         Returns:
             bool: True if hand is over, False otherwise
         """
-        # print("checking if _is_hand_over")
         active_players = set(range(2)) - self.state.game_state["folded_players"] - self.state.game_state["all_in_players"]
         
         # Hand is over if only one player remains
@@ -312,6 +316,8 @@ class PokerEnv(ta.Env):
         else:
             # Game is complete, determine winner
             self.determine_winner()
+            self.state.game_state["game_complete"] = True
+            
             
 
     def _evaluate_hands(self, active_players: set[int]) -> int:
@@ -325,7 +331,6 @@ class PokerEnv(ta.Env):
             int: Player ID of the winner
         """
         # show the cards of all active players
-        # print(self.state.game_state["player_hands"])
         cards = '\n\t'.join([
             f"Player {p}: " + self.state.game_state["player_hands"][p][0]["rank"]+self.state.game_state["player_hands"][p][0]["suit"]+", "+\
             self.state.game_state["player_hands"][p][1]["rank"]+self.state.game_state["player_hands"][p][1]["suit"]
@@ -524,6 +529,7 @@ class PokerEnv(ta.Env):
                 self._reset_round()
             else:
                 # Game is complete
+                self.determine_winner()
                 self.state.game_state["game_complete"] = True
 
     def _handle_showdown(self):

@@ -248,7 +248,7 @@ class GuessWhoEnv(ta.Env):
             action_text = action_match.group(1).lower()
             if action_text == self.target_character["name"].lower():
                 self.state.set_winners(
-                    player_id=[player_id],
+                    player_ids=[player_id],
                     reason=f"Congratulations! Player {player_id} guessed the target character."
                 )
             else:
@@ -289,13 +289,3 @@ class GuessWhoEnv(ta.Env):
         for key, value in self.target_character.items():
             res += f"{key}: {value}\n"
         return res
-    
-    def render(self):
-        """
-        Render the game state.
-        """
-        print(self.state.game_state["rendered_text"])
-
-    
-
-

@@ -172,7 +172,6 @@ class TowerOfHanoiEnv(ta.Env):
             )
         else:
             for match in matches:
-                print("Checking match", match)
                 source, target = match
                 source = source.upper()
                 target = target.upper()

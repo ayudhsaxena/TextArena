@@ -1,6 +1,5 @@
-import os
-import json
-import random
+import os, json, random
+import importlib.resources
 from typing import Optional, Dict, Any, Tuple
 
 import textarena as ta
@@ -90,21 +89,21 @@ class DebateEnv(ta.Env):
             FileNotFoundError: If the `topics_path` does not exist.
             ValueError: If the JSON file has an invalid format or is empty.
         """
-        if topics_path is None:
-            topics_path = os.path.join(
-                "textarena", "envs", "two_player", "Debate", "topics.json"
-            )
+        try:
+            if topics_path is not None:
+                # Use provided path
+                if not os.path.exists(topics_path):
+                    raise FileNotFoundError(f"Topics data file not found at: {topics_path}")
+                with open(topics_path, "r", encoding="utf-8") as file:
+                    self.topics = json.load(file)["topics"]
+            else:
+                # Use package resource
+                with importlib.resources.files('textarena.envs.two_player.Debate').joinpath('topics.json').open('r') as file:
+                    self.topics = json.load(file)["topics"]
+        except Exception as e:
+            raise FileNotFoundError(f"Failed to load topics data: {str(e)}")
 
-        if not os.path.exists(topics_path):
-            raise FileNotFoundError(f"Debate topics file not found at {topics_path}")
-
-        with open(topics_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-
-        if "topics" not in data or not isinstance(data["topics"], list):
-            raise ValueError("Invalid format: expected a 'topics' list in the JSON.")
-
-        self.topics = data["topics"]
+        
         if not self.topics:
             raise ValueError("Debate topics list is empty.")
 

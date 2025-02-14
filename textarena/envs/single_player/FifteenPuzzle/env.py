@@ -21,7 +21,7 @@ class FifteenPuzzleEnv(ta.Env):
         ## initialize the game state
         self.state = ta.State(
             num_players=1,
-            max_turns=100
+            max_turns=50
         )
 
     @property
@@ -248,12 +248,3 @@ class FifteenPuzzleEnv(ta.Env):
                 if self.board[r][c] is None:
                     return r, c
                 
-    def render(self):
-        """
-        Render the current state of the environment.
-
-        Returns:
-            str: The rendered state of the environment.
-            
-        """
-        print(self.state.game_state["rendered_board"])

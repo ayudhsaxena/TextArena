@@ -64,7 +64,7 @@ class SudokuEnv(ta.Env):
         ## remove cells to create puzzle
         puzzle_grid = self._remove_cells(full_grid, clues)
 
-        return puzzle_grid
+        return full_grid, puzzle_grid
     
     def _generate_full_grid(self) -> List[List[int]]:
         """
@@ -247,7 +247,7 @@ class SudokuEnv(ta.Env):
             random.seed()
 
         ## load the puzzle
-        self.game_board = self._generate_board(self.difficulty)
+        self.full_grid, self.game_board = self._generate_board(self.difficulty)
 
         return self.state.reset(
             game_state={
@@ -351,8 +351,8 @@ class SudokuEnv(ta.Env):
 
         if not match:
             self.state.set_invalid_move(
-                player_id=[player_id],
-                reason=[f"Invalid move format. Player {player_id} did not respond with valid 'row column number'."]
+                player_id=player_id,
+                reason=f"Invalid move format. Player {player_id} did not respond with valid 'row column number'."
             )
         else:
             row, col, num = map(int, match.groups())
@@ -398,18 +398,6 @@ class SudokuEnv(ta.Env):
         ## step the state
         return self.state.step()
             
-    def render(self):
-        """
-        Renders the current state of the Sudoku grid.
-
-        Returns:
-            str: The rendered game state.
-            
-        """
-        grid_str = self._get_grid_string_with_indices()
-        print("Board State\n", grid_str)
-        print(f"Turn Number {self.state.turn} of {self.max_turns}")
-    
     def _get_grid_string_with_indices(self, game_board: Optional[List[int]] = None) -> str:
         """
         Converts the current grid to a formatted string with row and column indices.
@@ -435,31 +423,9 @@ class SudokuEnv(ta.Env):
         return "\n".join(lines)
     
     def _is_move_correct(self, row: int, col: int, num: int) -> bool:
-        """
-        Checks if placing a number at the given position is correct.
+        """Check if move is correct based on the full solution grid."""
+        return self.full_grid[row][col] == num
 
-        Args:
-            row (int): Row index (0-based).
-            col (int): Column index (0-based).
-            num (int): Number to place.
-
-        Returns:
-            bool: True if the move is correct, False otherwise.
-        """
-        # Check row
-        if num in self.state.game_state["board"][row]:
-            return False
-        # Check column
-        if num in [self.state.game_state["board"][i][col] for i in range(9)]:
-            return False
-        # Check 3x3 subgrid
-        start_row, start_col = 3 * (row // 3), 3 * (col // 3)
-        for i in range(start_row, start_row + 3):
-            for j in range(start_col, start_col + 3):
-                if self.state.game_state["board"][i][j] == num:
-                    return False
-        return True
-    
     def _is_puzzle_complete(self) -> bool:
         """
         Checks if the puzzle is completely and correctly filled.

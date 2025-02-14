@@ -223,8 +223,8 @@ class TakEnv(ta.Env):
         if not match:
             ## no matching action
             self.state.set_invalid_move(
-                player_id=[self.state.current_player_id],
-                reason=[f"Invalid move format. Player {self.state.current_player_id} did not respond with a valid move in square brackets."]
+                player_id=self.state.current_player_id,
+                reason=f"Invalid move format. Player {self.state.current_player_id} did not respond with a valid move in square brackets."
             )
         
         else:
@@ -236,8 +236,8 @@ class TakEnv(ta.Env):
                 if not self._is_valid_placement(allocation):
                     ## invalid placement
                     self.state.set_invalid_move(
-                        player_id=[self.state.current_player_id],
-                        reason=[f"Invalid placement. Player {self.state.current_player_id} tried to place a piece on an invalid square."]
+                        player_id=self.state.current_player_id,
+                        reason=f"Invalid placement. Player {self.state.current_player_id} tried to place a piece on an invalid square."
                     )
                 else:
                     self._apply_placement(allocation, self.state.current_player_id)
@@ -253,8 +253,8 @@ class TakEnv(ta.Env):
                 if not self._is_valid_movement(source, allocation):
                     ## invalid movement
                     self.state.set_invalid_move(
-                        player_id=[self.state.current_player_id],
-                        reason=[f"Invalid movement. Player {self.state.current_player_id} tried to move pieces in an invalid way."]
+                        player_id=self.state.current_player_id,
+                        reason=f"Invalid movement. Player {self.state.current_player_id} tried to move pieces in an invalid way."
                     )
                 else:
                     ## valid movement
@@ -269,8 +269,8 @@ class TakEnv(ta.Env):
             else:
                 ## invalid action
                 self.state.set_invalid_move(
-                    player_id=[self.state.current_player_id],
-                    reason=[f"Invalid action. Player {self.state.current_player_id} tried to perform an unknown action."]
+                    player_id=self.state.current_player_id,
+                    reason=f"Invalid action. Player {self.state.current_player_id} tried to perform an unknown action."
                 )
 
             ## update the rendered board

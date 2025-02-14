@@ -179,12 +179,3 @@ class GuessTheNumberEnv(ta.Env):
             self.state.game_state["rendered_text"] = f"Player {player_id} guessed {player_guess}."
 
         return self.state.step()
-    
-    def render(self):
-        """
-        Render the game state.
-
-        Returns:
-            str: The rendered game state.
-        """
-        print(self.state.game_state["rendered_text"])

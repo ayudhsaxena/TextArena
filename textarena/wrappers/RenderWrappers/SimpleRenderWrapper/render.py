@@ -1,6 +1,10 @@
 import re
 from typing import Dict, Optional, Tuple
 from io import StringIO
+import mss
+import cv2
+import numpy as np
+import time
 
 from rich import box
 from rich.columns import Columns
@@ -44,6 +48,8 @@ class SimpleRenderWrapper(RenderWrapper):
         self,
         env: Env,
         player_names: Optional[Dict[int, str]] = None,
+        record_video: bool = False,
+        video_path: str = "game_recording.mp4",
     ):
         """
         Initialize the SimpleRenderWrapper.
@@ -63,8 +69,14 @@ class SimpleRenderWrapper(RenderWrapper):
             # Include any role mappings from the state (if any)
             player_names.update(self.state.role_mapping)
         self.player_names = player_names
+        self.record_video = record_video
+        self.video_path = video_path
 
         self.console = Console()
+
+        if record_video:
+            self.frames = []
+            self._capture_and_store_frame()
 
         # Assign colors to each player
         self.player_color_map = self._assign_player_colors()
@@ -128,6 +140,58 @@ class SimpleRenderWrapper(RenderWrapper):
 
         return log_text
 
+    def _capture_frame_with_mss(self):
+        """Capture a frame from the specified monitor using mss."""
+        with mss.mss() as sct:
+            monitor = sct.monitors[-1]
+            region = {
+                "top": monitor["top"],
+                "left": monitor["left"],
+                "width": monitor["width"],
+                "height": monitor["height"]
+            }
+
+            # Wait for the page to load
+            time.sleep(0.5)
+
+            try:
+                screenshot = sct.grab(region)
+                # Wait for the page to load
+                time.sleep(0.2)
+                frame = np.array(screenshot)
+                frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2BGR)  # Convert to OpenCV format
+                return frame
+            except Exception as e:
+                print(f"Error capturing screenshot: {e}")
+                return None
+
+    def _capture_and_store_frame(self):
+        """Capture and store a frame in the buffer."""
+        frame = self._capture_frame_with_mss()
+        if frame is not None:
+            self.frames.append(frame)
+
+    def _save_video(self):
+        """Save the recorded frames as a video file using OpenCV only."""
+        if not self.frames:
+            print("No frames captured, skipping video save.")
+            return
+
+        try:
+            height, width = self.frames[0].shape[:2]
+            
+            # Use XVID codec for better compatibility
+            fourcc = cv2.VideoWriter_fourcc(*'XVID')
+            out = cv2.VideoWriter(self.video_path, fourcc, 1, (width, height), True)
+
+            for frame in self.frames:
+                out.write(frame)
+
+            out.release()
+            print(f"\nVideo saved to {self.video_path} (XVID format)")
+
+        except Exception as e:
+            print(f"Error saving video: {e}")
 
 
     def _render_game_state(self, state: State) -> Panel:
@@ -375,15 +439,29 @@ class SimpleRenderWrapper(RenderWrapper):
         game_state_panel = self._render_game_state(state)
         game_state_height = self._get_rendered_height(game_state_panel)
 
+        # Create an empty spacer panel to push everything down
+        spacer_panel = Panel("", border_style="black", padding=(1, 1))  # Invisible panel
+
         # Create layout
         layout = Layout()
+        # layout.split_column(
+        #     Layout(spacer_panel, size=1),  # This pushes everything down by 1 line
+        #     Layout(name='game_state', size=game_state_height),
+        #     Layout(name='game_log')
+        # )
+
         layout.split_column(
-            Layout(name='game_state', size=game_state_height),
-            Layout(name='game_log')
+            Layout(spacer_panel, size=1),  # Keeps the spacer panel at the top
+            Layout(name="main_row", ratio=11)  # Sum of 6 + 5 for game_state and game_log
+        )
+
+        layout["main_row"].split_row(
+            Layout(name='game_state', ratio=6),
+            Layout(name='game_log', ratio=5)
         )
 
         # Adjust for borders and padding in game_state panel
-        available_log_height = self.console.size.height - (game_state_height + 5) ## 5 is the padding
+        available_log_height = self.console.size.height - (15) ## 5 is the padding
 
         if available_log_height < 5:
             available_log_height = 5  # Set a minimum height for logs
@@ -405,5 +483,19 @@ class SimpleRenderWrapper(RenderWrapper):
 
     def step(self, action: str) -> Tuple[Optional[Rewards], bool, bool, Optional[Info]]:
         step_results = self.env.step(action=action)
+        time.sleep(0.2)
         self._render()
+        if self.record_video:
+            self._capture_and_store_frame()
+        else:
+            time.sleep(0.2)
         return step_results
+    
+    def close(self):
+        """Clean up resources"""
+        if self.record_video:
+            try:
+                print("Saving video...")
+                self._save_video()
+            except Exception as e:
+                print(f"Error during cleanup: {e}")

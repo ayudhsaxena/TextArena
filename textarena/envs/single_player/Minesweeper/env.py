@@ -193,7 +193,7 @@ class MinesweeperEnv(ta.Env):
             else:
                 if action == "reveal":
                     if self.revealed[row][col] or self.flags[row][col]:
-                        print("REVEALED", self.revealed, "FLAGS", self.flags)
+                        # print("REVEALED", self.revealed, "FLAGS", self.flags)
                         self.state.set_invalid_move(
                             player_id=player_id,
                             reason=f"Invalid move. The cell at ({row}, {col}) has already been revealed or flagged."
@@ -237,7 +237,7 @@ class MinesweeperEnv(ta.Env):
                 elif action == "flag":
                     if not self.revealed[row][col]:
                         self.flags[row][col] = not self.flags[row][col]
-                        print(f"Flag {'placed' if self.flags[row][col] else 'removed'} at ({row}, {col})")
+                        # print(f"Flag {'placed' if self.flags[row][col] else 'removed'} at ({row}, {col})")
 
                     self.state.add_observation(
                             from_id=-1,

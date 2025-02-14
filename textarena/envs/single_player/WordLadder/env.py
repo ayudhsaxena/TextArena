@@ -397,17 +397,3 @@ class WordLadderEnv(ta.Env):
         
         # Move is valid only if there is exactly one letter difference
         return difference_count == 1
-
-
-    def render(self):
-        """
-        Render the current state of the environment.
-
-        Returns:
-            str: The rendered state of the environment.
-            
-        """
-        print(f"Start word: {self.start_word}")
-        print(f"Target word: {self.target_word}")
-        print(f"Current word: {self.current_word}")
-        print(f"History: {self.history}")

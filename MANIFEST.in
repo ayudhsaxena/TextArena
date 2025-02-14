@@ -3,3 +3,4 @@ include LICENSE
 recursive-include textarena *.json
 recursive-include textarena *.py
 recursive-include textarena/envs *.json
+include textarena/envs/two_player/Debate/topics.json

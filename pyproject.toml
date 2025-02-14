@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "TextArena"
-version = "0.3.9"
+version = "0.5.0"
 description = "[WIP] A Collection of Competitive Text-Based Games for Language Model Evaluation and Reinforcement Learning"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -27,7 +27,13 @@ dependencies = [
     "opencv-python",
     "chess",
     "pyenchant",
-    "google-generativeai"
+    "google-generativeai",
+    "python-dotenv",
+    "fastapi",
+    "uvicorn",
+    "anthropic",
+    "boto3",
+    "urllib3<2.0.0"
 ]
 
 [project.urls]

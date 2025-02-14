@@ -111,8 +111,8 @@ class WordChainsEnv(ta.Env):
         if not word_match:
             # Invalid action format
             self.state.set_invalid_move(
-                player_id=[self.state.current_player_id],
-                reason=[f"The Player {self.state.current_player_id} did not provide a word in the valid format."]
+                player_id=self.state.current_player_id,
+                reason=f"The Player {self.state.current_player_id} did not provide a word in the valid format."
             )
 
         else:
@@ -121,23 +121,23 @@ class WordChainsEnv(ta.Env):
             if not word.startswith(self.state.game_state["required_start_letter"]):
                 # Invalid format
                 self.state.set_invalid_move(
-                    player_id=[self.state.current_player_id],
-                    reason=[f"The word provided by Player {self.state.current_player_id} did start with the correct letter."]
+                    player_id=self.state.current_player_id,
+                    reason=f"The word provided by Player {self.state.current_player_id} did start with the correct letter."
                 )
 
             # check if the word is a valid english word
             elif not (self.word_checker_us.check(word) or self.word_checker_uk.check(word)):
                 # Invalid word
                 self.state.set_invalid_move(
-                    player_id=[self.state.current_player_id],
-                    reason=[f"The word provided by Player {self.state.current_player_id} is not a valid english word."]
+                    player_id=self.state.current_player_id,
+                    reason=f"The word provided by Player {self.state.current_player_id} is not a valid english word."
                 )
 
             # Check if the word has already been used
             elif word in self.state.game_state["used_words"]:
                 self.state.set_invalid_move(
-                    player_id=[self.state.current_player_id],
-                    reason=[f"Player {self.state.current_player_id} repeated the word '{word}', which has already been used."]
+                    player_id=self.state.current_player_id,
+                    reason=f"Player {self.state.current_player_id} repeated the word '{word}', which has already been used."
                 )
 
 

@@ -13,8 +13,49 @@ __all__ = [
     "ChainAgentWrapper",
     "OpponentModelingAgentWrapper",
     "StrategicPerspectiveAgentWrapper",
-    "RefinementAgentWrapper"
+    "RefinementAgentWrapper",
+    "AnswerTokenAgentWrapper"
 ]
+
+class AnswerTokenAgentWrapper(ta.AgentWrapper):
+    """ TODO """
+    def __init__(
+        self,
+        agent: ta.Agent,
+        answer_token: Optional[str] = "### Answer:",
+        debugging: bool = False
+    ):
+        """ TODO """
+        super().__init__(agent)
+        self.answer_token = answer_token
+        self.debugging = debugging
+
+
+    def __call__(self, observation: str) -> str:
+        """ TODO """
+
+        # set the agent prompt just for this part
+        current_system_prompt = self.agent.system_prompt 
+        answer_token_prompt = current_system_prompt + \
+            f"Anything you return after '{self.answer_token}' will be submitted to the game."
+
+        self.agent.system_prompt = answer_token_prompt
+        if self.debugging:
+            print(f"Model System prompt: {answer_token_prompt}")
+        
+        raw_answer = self.agent(observation)
+
+        # reset prompt 
+        self.agent.system_prompt = current_system_prompt
+
+        if self.debugging:
+            print(f"Model raw output: {raw_answer}")
+        if self.answer_token in raw_answer:
+            print(f"Model filtered output: {raw_answer.split(self.answer_token)[-1]}")
+            return raw_answer.split(self.answer_token)[-1]
+
+        else:
+            return raw_answer
 
 
 

@@ -151,7 +151,8 @@ class State:
             return (True, self.info)
 
         # increment turn counter
-        self.turn += 1
+        if not self.prevent_player_change:
+            self.turn += 1
 
         # check if the turn limit has been reached
         if (
@@ -184,6 +185,11 @@ class State:
         self.prevent_player_change = False
 
         return (done, info)
+
+    def manually_updated_current_player(self, new_player_id):
+        if not self.prevent_player_change:
+            self.current_player_id = new_player_id
+            self.error_count = 0
 
     def get_current_player_observation(self):
         current_player_observation = self.observations[self.current_player_id]
@@ -252,8 +258,8 @@ class State:
             player_ids (int): Invalid move player id.
             reason (str): Reason for the invalid move.
         """
-        print(self.error_count, self.game_state, reason)
         if self.error_allowance > self.error_count:
+            # increment error count
             self.error_count += 1
             self.prevent_player_change = True 
             self.add_observation(
@@ -338,10 +344,10 @@ class Env(ABC):
 class Wrapper(Env):
     """ Base class for environment wrappers. """
 
-    def __init__(self, env: Env):
+    def __init__(self, env): # Env):
         self.env = env
         self.state = env.state
-        assert isinstance(env, Env)
+        # assert isinstance(env, Env)
 
     def __getattr__(self, name):
         return getattr(self.env, name)

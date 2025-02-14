@@ -115,7 +115,7 @@ class WordSearchEnv(ta.Env):
 
         prompt += (
             "\n\nTo locate a word, specify the row and column of its start and end letters. Note that words are either across or down.\n"
-            "You may type your response and thoughts in any manner. But for your submissions, use the format '[start_row start_col end_row end_col]'.\n"
+            "You may type your response and thoughts in any manner. But you may only submit one submission at a time. For your submissions, use the format '[start_row start_col end_row end_col]'.\n"
             "For instance, if you want to find the word 'HELLO' starting at row 1, column 1 and ending at row 1, column 5, enter '[1 1 1 5]'.\n"
             "\nGuidelines:\n"
             "- Each guess must be unique; you cannot repeat the same guess.\n"
@@ -191,15 +191,9 @@ class WordSearchEnv(ta.Env):
                     if placed:
                         break
 
-            if not placed:
-                print(f"Could not place the word: {word}")
 
         # Fill the remaining grid with random letters
         self._fill_empty_cells(grid)
-
-        # # Validate and replace unintended words in a single pass
-        # print("Validating and replacing unintended words in the grid")
-        # self._validate_and_replace_unintended_words(grid, self.words)
 
         return grid, self.placed_words
 

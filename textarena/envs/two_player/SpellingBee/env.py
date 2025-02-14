@@ -144,7 +144,14 @@ class SpellingBeeEnv(ta.Env):
 
             # check if the word is longer/equal than the last word, and not a repeated word
             if len(self.state.game_state["word_history"]) == 0:
-                self.state.game_state["word_history"].append(word) 
+                # check if the letters are correct
+                if not set(word).issubset(self.state.game_state["allowed_letters"]):
+                    self.state.set_invalid_move(
+                        player_id=self.state.current_player_id,
+                        reason=f"Player {self.state.current_player_id} tried submitting a word containing illegal characters."
+                    )
+                else:
+                    self.state.game_state["word_history"].append(word) 
                 
 
             else:
@@ -166,8 +173,16 @@ class SpellingBeeEnv(ta.Env):
                     )
 
                 else:
-                    # correct
-                    self.state.game_state["word_history"].append(word)
+                    # correct length
+
+                    # check if the letters are correct
+                    if not set(word).issubset(self.state.game_state["allowed_letters"]):
+                        self.state.set_invalid_move(
+                            player_id=self.state.current_player_id,
+                            reason=f"Player {self.state.current_player_id} tried submitting a word containing illegal characters."
+                        )
+                    else:
+                        self.state.game_state["word_history"].append(word) 
 
         else:
             self.state.set_invalid_move(

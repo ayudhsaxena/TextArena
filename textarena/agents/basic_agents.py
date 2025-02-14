@@ -27,7 +27,7 @@ __all__ = [
 ]
 
 
-STANDARD_GAME_PROMPT = "You are a competitive game player. Make sure you read the game instructions carefully, and always follow the required format. The first action returned in squared brackets will be used."
+STANDARD_GAME_PROMPT = "You are a competitive game player. Make sure you read the game instructions carefully, and always follow the required format."
     
 class HumanAgent(Agent):
     """

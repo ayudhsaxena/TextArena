@@ -9,25 +9,15 @@ class BattleshipEnv(ta.Env):
     """
     def __init__(
         self,
-        difficulty: Optional[str] = "easy",
+        grid_size: Optional[int] = 10,
     ):
         """
         Initialize the Battleship environment.
         
         Args:
-            difficulty (str): Difficulty level of the game. Possible values are "easy", "medium", and "hard".
+            grid_size (int): Grid size
         """
-        self.environment_name = "Battleship"
-        self.difficulty = difficulty
-
-        ## initalize the grid size based on the difficulty level
-        ## TODO - should number of boats be based on difficulty level as well?
-        if self.difficulty == "easy":
-            self.grid_size = 10
-        elif self.difficulty == "medium":
-            self.grid_size = 12
-        elif self.difficulty == "hard":
-            self.grid_size = 14
+        self.grid_size = grid_size
 
         ## Initialize the game state
         self.state = ta.State(
@@ -39,24 +29,17 @@ class BattleshipEnv(ta.Env):
     def terminal_render_keys(self):
         return ["rendered_board"]
 
-    def reset(
-        self,
-        seed: Optional[int] = None
-    ) -> Optional[ta.Observations]:
+    def reset(self, seed: Optional[int]=None):
         """
         Reset the environment to start a new game.
         
         Args:
             seed (int): Seed for the random number generator.
-            
-        Returns:
-            Observations: Initial observations for the players.
         """
         if seed is not None:
             random.seed(seed)
-        else:
-            random.seed()
-        
+
+
         ## Initialize the board
         self.ships = {"Aircraft Carrier": 5, "Battleship": 4, "Submarine": 3, "Destroyer": 3, "Patrol Boat": 2}
         self.board, self.tracking_board, self.ship_placements = self._generate_board()
@@ -221,7 +204,7 @@ class BattleshipEnv(ta.Env):
             str: Player prompt.
         """
         prompt = (
-            f"You are Player {player_id}. You are playing the Battleship game ({self.difficulty} level).\n"
+            f"You are Player {player_id}. You are playing the Battleship game (grid_size: {self.grid_size}).\n"
             "Your goal is to sink all of your opponent's ships before they sink yours.\n"
             "On your turn, consider the observations made by your opponent, but do not repeat them exactly.\n"
             "Focus on new insights or strategies based on your understanding of the opponent's moves and the current state of the game.\n"
@@ -237,16 +220,7 @@ class BattleshipEnv(ta.Env):
 
         return prompt
     
-    def step(
-        self,
-        action: str,
-    ) -> Tuple[
-        Optional[ta.Observations],
-        Optional[ta.Rewards],
-        bool,
-        bool,
-        ta.Info
-    ]: 
+    def step(self, action: str) -> Tuple[bool, ta.Info]:
         """
         Take a step in the environment.
         
@@ -255,24 +229,21 @@ class BattleshipEnv(ta.Env):
             action (str): Action taken by the player.
         
         Returns:
-            Observations: Observations for the players.
-            Rewards: Rewards for the players.
-            bool: Whether the game is over.
-            bool: Whether the turn is over.
-            Info: Additional information.
+            done (bool): Whether the game is over.
+            Info (Dict): Additional information.
         """
         player_id = self.state.current_player_id
 
         ## update the observations
         self.state.add_observation(
             from_id=player_id,
-            to_id=player_id, ## send the observation to the player who took the action, since this is a private observation
+            to_id=-1, # Broadcast to all
             message=action,
             for_logging=True
         )
 
         ## action search pattern
-        action_search_pattern = re.compile(r"\[([A-Z])(\d+)\]") # e.g. [A4]
+        action_search_pattern = re.compile(r"\[([A-Z])(\d+)\]", re.IGNORECASE)
         match = action_search_pattern.search(action)
 
         if match is None:
@@ -282,7 +253,7 @@ class BattleshipEnv(ta.Env):
             )
         
         else:
-            row = ord(match.group(1)) - ord('A') # convert letter to row index
+            row = ord(match.group(1).upper()) - ord('A') # convert letter to row index
             col = int(match.group(2))
             
             opponent_id = 1 - player_id

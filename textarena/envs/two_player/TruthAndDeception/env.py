@@ -193,8 +193,8 @@ class TruthAndDeceptionEnv(ta.Env):
                     )
             else:
                 self.state.set_invalid_move(
-                    player_id=[self.state.current_player_id],
-                    reason=[f"Player {self.state.current_player_id} did not make their guess in the correct format."]
+                    player_id=self.state.current_player_id,
+                    reason=f"Player {self.state.current_player_id} did not make their guess in the correct format."
                 )
 
         return self.state.step()

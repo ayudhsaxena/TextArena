@@ -42,9 +42,6 @@ class LLMObservationWrapper(ObservationWrapper):
                     sender_name = self.state.role_mapping.get(sender_id, f"Player {sender_id}")
                 str_observation += f"\n[{sender_name}] {message}"
 
-        recipient_name = self.state.role_mapping.get(player_id, f"Player {player_id}")
-        str_observation += f"\n[{recipient_name}]"
-
         return str_observation
 
     def observation(self, player_id: int, observation: Optional[ta.Observations]):
@@ -59,3 +56,12 @@ class LLMObservationWrapper(ObservationWrapper):
         self.full_observations[player_id].extend(observation)
 
         return self._convert_obs_to_str(player_id=player_id)
+
+    async def async_get_observation(self) -> Tuple[Optional[int], str]:
+        """
+        Overrides the async_get_observation method so that the raw observation
+        is converted to a formatted string before being returned.
+        """
+        player_id, raw_obs = await self.env.async_get_observation()
+        obs_str = self.observation(player_id, raw_obs)
+        return player_id, obs_str

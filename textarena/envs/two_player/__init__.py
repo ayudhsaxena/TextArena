@@ -256,33 +256,55 @@ register(
 )
 
 register(
-    id="Battleship-v0-easy",
+    id="Battleship-v0",
     entry_point="textarena.envs.two_player.Battleship.env:BattleshipEnv",
-    difficulty="easy",
+    grid_size=10,
 )
 
 register(
-    id="Mastermind-v0-easy",
-    entry_point="textarena.envs.two_player.Mastermind.env:MastermindEnv",
-    difficulty="easy",
+    id="Battleship-v0-large",
+    entry_point="textarena.envs.two_player.Battleship.env:BattleshipEnv",
+    grid_size=14,
 )
 
 register(
-    id="Mastermind-v0-medium",
-    entry_point="textarena.envs.two_player.Mastermind.env:MastermindEnv",
-    difficulty="medium",
-)
-
-register(
-    id="Mastermind-v0-hard",
-    entry_point="textarena.envs.two_player.Mastermind.env:MastermindEnv",
-    difficulty="hard",
+    id="Battleship-v0-giant",
+    entry_point="textarena.envs.two_player.Battleship.env:BattleshipEnv",
+    grid_size=20,
 )
 
 register(
     id="SpiteAndMalice-v0",
     entry_point="textarena.envs.two_player.SpiteAndMalice.env:SpiteAndMaliceEnv",
 )
+
+register(
+    id="Mastermind-v0",
+    entry_point="textarena.envs.two_player.Mastermind.env:MastermindEnv",
+    code_length=4,
+    num_numbers=6,
+    max_turns=20,
+    duplicate_numbers=False,
+)
+
+register(
+    id="Mastermind-v0-hard",
+    entry_point="textarena.envs.two_player.Mastermind.env:MastermindEnv",
+    code_length=4,
+    num_numbers=8,
+    max_turns=30,
+    duplicate_numbers=False,
+)
+
+register(
+    id="Mastermind-v0-extreme",
+    entry_point="textarena.envs.two_player.Mastermind.env:MastermindEnv",
+    code_length=6,
+    num_numbers=12,
+    max_turns=50,
+    duplicate_numbers=True,
+)
+
 
 register(
     "LetterAuction-v0-easy",

@@ -154,21 +154,14 @@ class UltimateTicTacToeEnv(ta.Env):
         if match is None:
             # Invalid format
             self.state.set_invalid_move(
-                player_id=[player_id],
-                reason=[f"Invalid move format. Player {player_id} did not respond with a valid move."]
+                player_id=player_id,
+                reason=f"Invalid move format. Player {player_id} did not respond with a valid move."
             )
         else:
             micro_board, row, col = match.groups()
             micro_board, row, col = int(micro_board), int(row), int(col)
 
-            # Check if the move is valid
-            # if not self._is_valid_move(micro_board, row, col):
-            #     self.state.set_invalid_move(
-            #         player_ids=[player_id],
-            #         reasons=[f"Invalid move. Player {player_id} did not respond with a valid move."]
-            #     )
-            # else:
-            
+
             if self._is_valid_move(micro_board, row, col):
             
                 # Make the move
@@ -273,32 +266,32 @@ class UltimateTicTacToeEnv(ta.Env):
         ## check if the micro_board, row, and col are within the valid range
         if micro_board < 0 or micro_board > 8 or row < 0 or row > 2 or col < 0 or col > 2:
             self.state.set_invalid_move(
-                player_id=[self.state.current_player_id],
-                reason=[f"Player {self.state.current_player_id} made an invalid move. The micro_board, row, or col is out of range."]
+                player_id=self.state.current_player_id,
+                reason=f"Player {self.state.current_player_id} made an invalid move. The micro_board, row, or col is out of range."
             )
             return False
         
         ## check if the cell is empty
         if self.board[micro_board][row][col] != ' ':
             self.state.set_invalid_move(
-                player_id=[self.state.current_player_id],
-                reason=[f"Player {self.state.current_player_id} made an invalid move. The cell is already occupied."]
+                player_id=self.state.current_player_id,
+                reason=f"Player {self.state.current_player_id} made an invalid move. The cell is already occupied."
             )
             return False
         
         ## check if the next micro board is not won but the player is playing in a different micro board
         if self.next_micro_board is not None and micro_board != self.next_micro_board:
             self.state.set_invalid_move(
-                player_id=[self.state.current_player_id],
-                reason=[f"Player {self.state.current_player_id} made an invalid move. The player must play in the next micro board."]
+                player_id=self.state.current_player_id,
+                reason=f"Player {self.state.current_player_id} made an invalid move. The player must play in the next micro board."
             )
             return False
         
         ## check if the micro board is won and the player is still playing in it.
         if self.macro_board[micro_board // 3][micro_board % 3] != ' ':
             self.state.set_invalid_move(
-                player_id=[self.state.current_player_id],
-                reason=[f"Player {self.state.current_player_id} made an invalid move. The micro board is already won."]
+                player_id=self.state.current_player_id,
+                reason=f"Player {self.state.current_player_id} made an invalid move. The micro board is already won."
             )
             return False
 

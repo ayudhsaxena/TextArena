@@ -108,7 +108,7 @@ class CrosswordsEnv(ta.Env):
 
         prompt += "\n\nHere are the clues for the words you need to find:\n"
         prompt += self._clue_generator()
-        prompt += ("\n\nYou may provide multiple responses in one move. However, note that any wrong guesses will result in you losing. Hence, plan your approach and risk appetite. Only guesses in the format of [row column letter] will be fetched from your response, e.g. [0 0 d], [1 2 G].\n"
+        prompt += ("\n\nYou may provide one response in one move. However, note that any wrong guesses will result in you losing. Hence, plan your approach and risk appetite. Only guesses in the format of [row column letter] will be fetched from your response, e.g. [0 0 d], [1 2 G].\n"
                    "As you play, the history of your choices will be appended below. Use the information to complete the game.\n")
     
         return prompt
@@ -175,9 +175,6 @@ class CrosswordsEnv(ta.Env):
                             break
                     if placed:
                         break
-
-            if not placed:
-                print(f"Could not place the word: {word}")
 
         return grid, placed_words, clues
 
@@ -360,10 +357,8 @@ class CrosswordsEnv(ta.Env):
         ## validate the actions
         ## note that the response can have multiple guesses at one go.
         action_search_pattern = re.compile(r"\[(\d+)\s(\d+)\s([a-zA-Z])\]") ## [row column letter]
-        # print("Actions", action)
         matches = action_search_pattern.findall(action)
-        matches = set(matches) ## remove duplicates
-        # print("Matches", matches)
+        matches = set(matches) 
 
         if not matches:
             self.state.set_invalid_move(
@@ -372,7 +367,6 @@ class CrosswordsEnv(ta.Env):
             )
         else:
             for match in matches:
-                print("Checking match", match)
                 row, col, letter = match
                 row, col, letter = int(row), int(col), str(letter)
                 if row < 0 or row >= len(self.state.game_state["board"]) or col < 0 or col >= len(self.state.game_state["board"][0]):
@@ -422,15 +416,6 @@ class CrosswordsEnv(ta.Env):
             bool: True if the game is over, False otherwise
         """
         return all("_" not in row for row in self.state.game_state["board"])
-    
-    def render(self):
-        """
-        Render the current state of the game.
-
-        Returns:
-            str: The rendered game state.
-        """
-        print(self.state.game_state["rendered_board"])
 
     def _clue_generator(self, string_format=True):
         """

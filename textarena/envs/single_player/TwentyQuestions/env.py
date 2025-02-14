@@ -255,12 +255,6 @@ class TwentyQuestionsEnv(ta.Env):
         """
         return f"Game word: {self.game_word}"
     
-    def render(self):
-        """
-        Render the game state.
-        """
-        print(self.state.game_state["rendered_text"])
-
     def _load_word_list(self, word_list: list) -> list:
         """
         Load the word list for the game.

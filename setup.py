@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="textarena",
-    version="0.3.9",
+    version="0.5.0",
     url="https://github.com/LeonGuertler/TextArena",
     author="Leon Guertler",
     author_email="Guertlerlo@cfar.a-star.edu.sg",
@@ -12,7 +12,9 @@ setup(
     package_data={
         "": ["*.json"],  # Include all JSON files in any package
         "textarena.envs.two_player.TruthAndDeception": ["*.json"],  # Explicitly include JSON files in this directory
+        "textarena.envs.two_player.Debate": ["*.json"],  # Explicitly include JSON files in this directory
         "textarena": ["envs/**/*.json"],  # Recursive include from textarena root
+        "textarena.envs.two_player.Debate": ["topics.json"],
     },
     install_requires=[
         "requests",
@@ -29,7 +31,14 @@ setup(
         "opencv-python",
         "chess",
         "pyenchant",
-        "google-generativeai"
+        "google-generativeai",
+        "python-dotenv",
+        "fastapi",
+        "uvicorn",
+        "anthropic",
+        "boto3",
+        "urllib3<2.0.0"
+
     ],
     python_requires='>=3.9',
 )

@@ -144,7 +144,7 @@ class ConnectFourEnv(ta.Env):
 
             # insert disc
             self.state.game_state["board"][row][col] = "X" if self.state.current_player_id == 0 else "O"
-
+            self.state.game_state["rendered_board"] = self._render_board()
 
             # Check for a win
             if self._check_win(row, col):

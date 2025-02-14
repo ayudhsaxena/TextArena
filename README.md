@@ -48,7 +48,7 @@ while not done:
 rewards = env.close()
 ```
 
-### Play Online
+<!-- ### Play Online
 ```python
 import textarena as ta
 
@@ -84,7 +84,7 @@ while not done:
     action = agent(observation)
     done, info = env.step(action=action)
 rewards = env.close()
-```
+``` -->
 
 
 ## Implementation Status

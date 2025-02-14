@@ -256,8 +256,8 @@ class StrategoEnv(ta.Env):
 
         if match is None:
             self.state.set_invalid_move(
-                player_id=[player_id],
-                reason=[f"Invalid action format. Player {player_id} did not input a move in the format [A0 B0]."]
+                player_id=player_id,
+                reason=f"Invalid action format. Player {player_id} did not input a move in the format [A0 B0]."
             )
         
         else:
@@ -509,15 +509,15 @@ class StrategoEnv(ta.Env):
         """
         if not (0 <= src_row < 10 and 0 <= src_col < 10 and 0 <= dest_row < 10 and 0 <= dest_col < 10):
             self.state.set_invalid_move(
-                player_id=[player_id],
-                reason=[f"Invalid action format. Player {player_id} did not input valid coordinates."]
+                player_id=player_id,
+                reason=f"Invalid action format. Player {player_id} did not input valid coordinates."
             )
             return False
         
         if self.board[src_row][src_col] is None or self.board[src_row][src_col]['player'] != player_id:
             self.state.set_invalid_move(
-                player_id=[player_id],
-                reason=[f"Invalid action format. Player {player_id} must move one of their own pieces."]
+                player_id=player_id,
+                reason=f"Invalid action format. Player {player_id} must move one of their own pieces."
             )
             return False
         
@@ -527,52 +527,52 @@ class StrategoEnv(ta.Env):
                 for col in range(min(src_col, dest_col) + 1, max(src_col, dest_col)):
                     if self.board[src_row][col] is not None:
                         self.state.set_invalid_move(
-                            player_id=[player_id],
-                            reason=[f"Invalid action format. Player {player_id} cannot move a scout through other pieces."]
+                            player_id=player_id,
+                            reason=f"Invalid action format. Player {player_id} cannot move a scout through other pieces."
                         )
                         return False
             elif src_col == dest_col:
                 for row in range(min(src_row, dest_row) + 1, max(src_row, dest_row)):
                     if self.board[row][src_col] is not None:
                         self.state.set_invalid_move(
-                            player_id=[player_id],
-                            reason=[f"Invalid action format. Player {player_id} cannot move a scout through other pieces."]
+                            player_id=player_id,
+                            reason=f"Invalid action format. Player {player_id} cannot move a scout through other pieces."
                         )
                         return False
             else:
                 self.state.set_invalid_move(
-                    player_id=[player_id],
-                    reason=[f"Invalid action format. Player {player_id} cannot move a scout diagonally."]
+                    player_id=player_id,
+                    reason=f"Invalid action format. Player {player_id} cannot move a scout diagonally."
                 )
                 return False
             
         if abs(src_row - dest_row) + abs(src_col - dest_col) != 1 and self.board[src_row][src_col]['rank'].lower() != 'scout':
             ## !  - by right, only scouts can move more than one square at a time but we are not implementing that yet
             self.state.set_invalid_move(
-                player_id=[player_id],
-                reason=[f"Invalid action format. Pieces, apart from scouts, can only move one square at a time."]
+                player_id=player_id,
+                reason=f"Invalid action format. Pieces, apart from scouts, can only move one square at a time."
             )
             return False
         
         if self.board[dest_row][dest_col] is not None:
             if (dest_row, dest_col) in self.lakes:
                 self.state.set_invalid_move(
-                    player_id=[player_id],
-                    reason=[f"Invalid action format. Player {player_id} cannot move into the lake."]
+                    player_id=player_id,
+                    reason=f"Invalid action format. Player {player_id} cannot move into the lake."
                 )
                 return False
             
             elif self.board[dest_row][dest_col]['player'] == player_id:
                 self.state.set_invalid_move(
-                    player_id=[player_id],
-                    reason=[f"Invalid action format. Player {player_id} cannot move onto their own piece."]
+                    player_id=player_id,
+                    reason=f"Invalid action format. Player {player_id} cannot move onto their own piece."
                 )
                 return False
         
         if self.board[src_row][src_col]['rank'].lower() in ['bomb','flag']:
             self.state.set_invalid_move(
-                player_id=[player_id],
-                reason=[f"Invalid action format. Player {player_id} cannot move a bomb or flag."]
+                player_id=player_id,
+                reason=f"Invalid action format. Player {player_id} cannot move a bomb or flag."
             )
             return False
         

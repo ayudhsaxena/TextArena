@@ -24,13 +24,10 @@ from textarena.envs.registration import (
     check_env_exists,
 )
 
-from textarena.api import (
-    register_online_model,
-    make_online,
-)
+# from textarena.api import make_online #, SyncOnlineEnv
 
-from textarena import wrappers
-from textarena import agents
+
+from textarena import wrappers, agents
 
 
 
@@ -59,4 +56,4 @@ __all__ = [
     # play online
     "make_online",
 ]
-__version__ = "0.3.9"
+__version__ = "0.5.0"
