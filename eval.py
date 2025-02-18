@@ -7,13 +7,18 @@ import argparse
 from datetime import datetime
 import torch
 import json
+import multiprocessing as mp
+from uuid import uuid4
 
 os.environ["HF_HOME"] = "/work/ayudhs/hf_cache"
 os.environ["TRANSFORMERS_CACHE"] = os.environ["HF_HOME"]
 
-def dump_info_to_file(info, rewards, role, model_name, log_folder):
+def dump_info_to_file(info, rewards, role, log_folder):
+    
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{log_folder}/{model_name.split('/')[-1]}_{current_time}.txt"
+    random_id = uuid4().hex
+    current_time = f"{current_time}_{random_id}"
+    filename = f"{log_folder}/{current_time}.txt"
     with open(filename, "w") as log_file:
         formatted_info = info.replace('\\n', '\n')
         log_file.write(f"Observation: {info}\n")
@@ -37,34 +42,47 @@ def run_game(result_queue, agents, log_folder, env_id):
 
     rewards = env_local.close()
     result_queue.put(rewards)
-    player_id, info = env_local.get_observation()
-    dump_info_to_file(info, rewards, args.role, args.model_name, log_folder)
+    player_id, observation = env_local.get_observation()
+    dump_info_to_file(observation, rewards, args.role, log_folder)
 
+## batch games to make it faster
 def run(agents, env_id, args):
-
-    
-     # Create a folder for the logs based on model_name and current date-time
+    # Create a folder for the logs based on model_name and current date-time
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_folder = f"/work/ayudhs/textarena/TextArena/log_outputs/{env_id}/{args.role}_{args.model_name.split('/')[-1]}_{current_time}"
     os.makedirs(log_folder, exist_ok=True)
     with open(f"{log_folder}/args.json", "w") as f:
         json.dump(vars(args), f, indent=4)
 
+    
+
     results = []
-    for batch in range(10):  # 20 batches of 5 games = 100 games
-        threads = []
-        result_queue = Queue()
-        
-        for i in range(10):
-            thread = threading.Thread(target=run_game, args=(result_queue, agents, log_folder, env_id))
-            threads.append(thread)
-            thread.start()
-        
-        for thread in threads:
-            thread.join()
-        
-        while not result_queue.empty():
-            results.append(result_queue.get())
+    total_games = 100  # Total number of games to run
+    processes = []
+    result_queue = mp.Queue()
+    max_processes = 45
+
+    games_started = 0
+    while games_started < total_games or processes:
+        # Remove finished processes
+        processes = [p for p in processes if p.is_alive()]
+
+        # Start new processes until we have max_processes running or reach total games
+        while len(processes) < max_processes and games_started < total_games:
+            p = mp.Process(target=run_game, args=(result_queue, agents, log_folder, env_id))
+            p.start()
+            processes.append(p)
+            games_started += 1
+
+        time.sleep(0.1)  # Small delay to prevent busy waiting
+
+    # Wait for any remaining processes to finish
+    for p in processes:
+        p.join()
+
+    # Collect any remaining results
+    while not result_queue.empty():
+        results.append(result_queue.get())
 
     # Calculate average rewards
     avg_rewards = {
@@ -72,6 +90,7 @@ def run(agents, env_id, args):
         for player in results[0].keys()
     }
     print(f"Average rewards after {len(results)} games:", avg_rewards)
+    
     # Dump the final average rewards into a txt file
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
     final_filename = f"{log_folder}/final_avg_rewards_{current_time}.txt"
@@ -81,16 +100,17 @@ def run(agents, env_id, args):
             final_log_file.write(f"Player {player}: {reward}\n")
 
 if __name__ == "__main__":
+
+    
     # Parse arguments
     parser = argparse.ArgumentParser(description='Evaluate guesser or deceiver.')
     parser.add_argument('--role', choices=['guesser', 'deceiver'], required=True, help='Role to evaluate: guesser or deceiver')
     parser.add_argument('--model_name', required=True, help='Model name to use for evaluation')
     parser.add_argument('--agent_type', choices=['openrouter', 'gemini', 'openai', 'hflocal'], required=True, help='Type of agent to use: openrouter, gemini, or openai')
     parser.add_argument('--env_id', required=True, help='Environment ID to use for the game')
+    parser.add_argument('--opponent_model', default='gpt-4o-mini', help='Model name for the opponent (default: gpt-4o-mini)')
     args = parser.parse_args()
-
-    expert_agent = ta.agents.OpenAIAgent(model_name='gpt-4o-mini')
-
+    expert_agent = ta.agents.OpenAIAgent(model_name=args.opponent_model)
     # Initialize agents based on command line arguments
     if args.agent_type == 'openrouter':
         eval_agent = ta.agents.OpenRouterAgent(model_name=args.model_name)

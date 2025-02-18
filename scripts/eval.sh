@@ -1,9 +1,14 @@
 #!/bin/bash
 
+# # Define arrays for parameters
+# roles=("deceiver" "guesser")
+# models=("o3-mini" "gpt-4o" "Qwen/Qwen2.5-7B-Instruct")
+# envs=("TruthAndDeception-v0" "TruthAndDeception-v0-long" "TruthAndDeception-v0-super-long")
+
 # Define arrays for parameters
-roles=("deceiver" "guesser")
-models=("o3-mini" "gpt-4o" "Qwen/Qwen2.5-7B-Instruct")
-envs=("TruthAndDeception-v0" "TruthAndDeception-v0-long")
+roles=("guesser" "deceiver")
+models=("gpt-4o-mini")
+envs=("TruthAndDeception-v0" "TruthAndDeception-v0-long" "TruthAndDeception-v0-super-long")
 
 # Define agent types for each model
 declare -A agent_types

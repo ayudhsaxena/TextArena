@@ -258,6 +258,7 @@ class OpenAIAgent(Agent):
         model_name: str, 
         system_prompt: Optional[str] = STANDARD_GAME_PROMPT,
         verbose: bool = False,
+        temperature: float = None,
         **kwargs
     ):
         """
@@ -270,6 +271,7 @@ class OpenAIAgent(Agent):
             **kwargs: Additional keyword arguments to pass to the OpenAI API call.
         """
         super().__init__()
+        self.temperature = temperature
         self.model_name = model_name
         self.system_prompt = system_prompt
         self.verbose = verbose
@@ -302,6 +304,7 @@ class OpenAIAgent(Agent):
             model=self.model_name,
             messages=messages,
             n=1,
+            temperature=self.temperature,
             stop=None,
             **self.kwargs
         )
@@ -357,7 +360,8 @@ class HFLocalAgent(Agent):
         self, 
         model_name: str, 
         device: str = "auto",
-        quantize: bool = False
+        quantize: bool = False,
+        temperature: float = None,
     ):
         """
         Initialize the Hugging Face local agent.
@@ -369,6 +373,7 @@ class HFLocalAgent(Agent):
         super().__init__()
         ## Initialize the Hugging Face model and tokenizer
         self.model_name = model_name
+        self.temperature = temperature
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_name,
             cache_dir=os.environ.get("HF_HOME", None),
@@ -393,7 +398,8 @@ class HFLocalAgent(Agent):
             'text-generation',
             max_new_tokens=500,
             model=self.model, 
-            tokenizer=self.tokenizer, 
+            tokenizer=self.tokenizer,
+            temperature=self.temperature,
             )
     
     def __call__(
